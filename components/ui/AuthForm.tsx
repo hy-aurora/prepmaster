@@ -1,16 +1,17 @@
 "use client"
-import React, { ReactNode } from 'react'
+ import React from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 
-import {Form,} from "@/components/ui/form"
+import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import Link from "next/link"
 import { toast } from 'sonner'
 import FormField from '../FormField'
+import { useRouter } from 'next/navigation'
 
 const authFormSchema: (type: "sign-in" | "sign-up") => z.ZodObject<any> = (type: "sign-in" | "sign-up") => {
     if (type === "sign-in") {
@@ -28,6 +29,7 @@ const authFormSchema: (type: "sign-in" | "sign-up") => z.ZodObject<any> = (type:
 }
 
 const AuthForm = ({ type }: { type: "sign-in" | "sign-up" }) => {
+    const router = useRouter();
     const formSchema = authFormSchema(type);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -38,14 +40,17 @@ const AuthForm = ({ type }: { type: "sign-in" | "sign-up" }) => {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
-            if(type === "sign-in") {
-                console.log("SIGN IN", values);
-            } else{
-                console.log("SIGN UP", values);
+            if(type === "sign-up") {
+                toast.success("Account created successfully.Please sign in.")
+                router.push('/sign-in')
+            } else {
+                toast.success("Sign in successfully.")
+                router.push('/')
+                
             }
         } catch (error) {
             console.error("Submission error:", error);
-            toast.error("Something went wrong. Please try again.")
+            toast.error("Something went wrong. Please try again.");
         }
     }
     const isSignIn = type === "sign-in";
@@ -58,29 +63,39 @@ const AuthForm = ({ type }: { type: "sign-in" | "sign-up" }) => {
                     <h2 className="text-primary-100">prepmaster</h2>
                 </div>
                 <h3>Practice Job interview with AI</h3>
-                
-                {!isSignIn && (
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        label="Name"
-                        placeholder="Your name"
-                    />
-                )}
-                <p>Email</p>
-                <p>Password</p>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6 mt-6 from-orange-50">
-                        
+                        {!isSignIn && (
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                label="Name"
+                                placeholder="Enter your name"
+                            />
+                        )}
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            label="Email"
+                            placeholder="Enter your email address"
+                            type="email"
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            label="Password"
+                            placeholder="Enter your password"
+                            type="password"
+                        />
                         <Button className="btn w-full" type="submit">
                             {type === "sign-in" ? "Sign In" : "Create an Account"}
                         </Button>
                     </form>
                 </Form>
-                <p className='text-center'>
-                    {isSignIn ? "No account yet? " : "Already have an account? "}
+                <p className="text-center">
+                    {isSignIn ? "You don't have any account? " : "Already have an account? "}
                     <Link href={isSignIn ? "/sign-up" : "/sign-in"} className="text-primary-100 font-semibold">
-                    {!isSignIn ? "Sign In" : "Create an Account"}
+                        {isSignIn ? "Create an Account" : "Sign In"}
                     </Link>
                 </p>
             </div>

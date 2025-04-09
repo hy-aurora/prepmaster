@@ -16,13 +16,13 @@ const FormField = <T extends FieldValues>({control,name,label,placeholder,type="
         control={control}
         render={({ field }) => (
             <FormItem>
-                <FormLabel className='label'>Username</FormLabel>
+                <FormLabel className='label'>{label}</FormLabel>
                 <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    <Input className='input' placeholder={placeholder}
+                     type={type}
+                     {...field} />
                 </FormControl>
-                <FormDescription>
-                    This is your public display name.
-                </FormDescription>
+                
                 <FormMessage />
             </FormItem>
         )}
