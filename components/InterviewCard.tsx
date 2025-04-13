@@ -1,7 +1,11 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import Image from "next/image";
-import {getRandomInterviewCover} from '@/public/utils';;
+import {getRandomInterviewCover} from '@/public/utils';
+import Link from 'next/link';
+import { Button } from "@/components/ui/button"
+import DisplayTechicons from './DisplayTechicons';
+// Adjusted to use a custom Button component
 
 const InterviewCard = ({interviewId,userId,role,type,techstack,createdAt}:InterviewCardProps) => {
     const feedback = null as Feedback | null;
@@ -35,8 +39,23 @@ const InterviewCard = ({interviewId,userId,role,type,techstack,createdAt}:Interv
               <p>{formattedDate}</p>
 
             </div>
+            <div className='flex flex-row gap-2' items-center>
+              <Image src="/star.svg" alt="star" width={22}
+              height={22}/> 
+              <p>{feedback?.totalScore || '---'}/100</p>
+            </div>
           </div>
-
+    <p className='Line-clamp-2'>
+      {feedback?.finalAssessment || "You haven't taken the interview yet. Take it now to improve your skills."}
+    </p>
+        </div>
+        <div className='flex flex-row justify-between'>
+          <DisplayTechicons techStack={techstack}/>
+          <Button>
+            <Link href={feedback ? `/interviews/${interviewId}/feedback` : `/interviews/${interviewId}/questions`}>
+              {feedback ? "Check Feedback" : "View Interview"}
+            </Link>
+          </Button>
         </div>
     </div>
     </div>
