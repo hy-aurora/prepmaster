@@ -11,9 +11,12 @@ const normalizeTechName = (tech:string) => {
   return mappings[key as keyof typeof mappings];
 };
 const covers = [
-  '/images/cover1.jpg',
-  '/images/cover2.jpg',
-  '/images/cover3.jpg'
+  '/covers/adobe.png',
+  '/covers/amazon.png',
+  '/covers/facebook.png',
+  '/covers/hostinger.png',
+  '/covers/pinterest.png',
+  '/covers/quora.png',
 ];
 
 export function getRandomInterviewCover() {
