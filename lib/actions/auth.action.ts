@@ -1,22 +1,31 @@
-'use server';
-import { dba, auth } from "../../firebase-admin";
-
+import { db, auth } from "@/firebase/admin";
 import { UserRecord } from "firebase-admin/auth";
-import { cookies } from "next/headers";
+
+// Add type definitions for authentication parameters
+type SignUpParams = {
+    uid: string;
+    name: string;
+    email: string;
+};
+
+type SignInParams = {
+    email: string;
+    idToken: string;
+};
 
 const ONE_WEEK = 60 * 60 * 24 * 7 * 1000; // 7 days in milliseconds
 
 export async function signUp(params: SignUpParams) {
     const { uid, name, email } = params;
     try {
-        const userRecord = await dba.collection('users').doc(uid).get();
+        const userRecord = await db.collection('users').doc(uid).get();
         if (userRecord.exists) {
             return {
                 success: false,
                 message: 'User already exists. Please sign in instead.'
             }
         }
-        await dba.collection('users').doc(uid).set({ name, email });
+        await db.collection('users').doc(uid).set({ name, email });
         return {
             success: true,
             message: 'User created successfully.'
@@ -43,10 +52,14 @@ export async function signIn(params: SignInParams) {
         if (!userRecord) {
             return {
                 success: false,
-                message: 'User not exist. Create an account instead.'
+                message: 'User does not exist. Create an account instead.'
             }
         }
         await setSessionCookie(idToken);
+        return {
+            success: true,
+            message: 'User signed in successfully.'
+        };
     } catch (e) {
         console.log(e);
         return {
@@ -57,7 +70,9 @@ export async function signIn(params: SignInParams) {
 }
 
 export async function setSessionCookie(idToken: string) {
-    const cookieStore = await cookies();
+    // Dynamically import cookies; this ensures it's only used server-side.
+    const { cookies } = await import('next/headers');
+    const cookieStore = cookies();
     const sessionCookie = await auth.createSessionCookie(idToken, {
         expiresIn: ONE_WEEK,
     });
