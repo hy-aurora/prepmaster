@@ -6,6 +6,7 @@ module.exports = {
 				tls: false,
 				net: false,
 				fs: false,
+				child_process: false, // Added to resolve the error
 			};
 		}
 		return config;
