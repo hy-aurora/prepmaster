@@ -2,6 +2,7 @@
 
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
+import { FirestoreError } from "firebase/firestore";
 
 import { db } from "@/firebase/admin";
 import { feedbackSchema } from "@/constants";
@@ -93,20 +94,39 @@ export async function getFeedbackByInterviewId(
 export async function getLatestInterviews(
   params: GetLatestInterviewsParams
 ): Promise<Interview[] | null> {
-  const { userId, limit = 20 } = params;
+  const userId = params.userId;
+  const limit = params.limit || 20;
 
-  const interviews = await db
-    .collection("interviews")
-    .orderBy("createdAt", "desc")
-    .where("finalized", "==", true)
-    .where("userId", "!=", userId)
-    .limit(limit)
-    .get();
+  try {
+    const interviews = await db
+      .collection("interviews")
+      .orderBy("createdAt", "desc")
+      .where("finalized", "==", true)
+      .where("userId", "!=", userId)
+      .limit(limit)
+      .get();
 
-  return interviews.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Interview[];
+    return interviews.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Interview[];
+  } catch (error: any) {
+    if (
+      error.code === "FAILED_PRECONDITION" &&
+      error.message.includes("The query requires an index")
+    ) {
+      const indexLinkMatch = error.message.match(
+        /https:\/\/console\.firebase\.google\.com\/[^\s]+/
+      );
+      if (indexLinkMatch) {
+        console.error(
+          "Firestore index required. Create it here:",
+          indexLinkMatch[0]
+        );
+      }
+    }
+    throw error; // Re-throw other errors
+  }
 }
 
 export async function getInterviewsByUserId(
