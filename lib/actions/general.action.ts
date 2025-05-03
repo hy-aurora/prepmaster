@@ -2,7 +2,6 @@
 
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
-import { FirestoreError } from "firebase/firestore";
 
 import { db } from "@/firebase/admin";
 import { feedbackSchema } from "@/constants";
@@ -110,8 +109,10 @@ export async function getLatestInterviews(
       id: doc.id,
       ...doc.data(),
     })) as Interview[];
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (
+      error instanceof Error &&
+      "code" in error &&
       error.code === "FAILED_PRECONDITION" &&
       error.message.includes("The query requires an index")
     ) {
